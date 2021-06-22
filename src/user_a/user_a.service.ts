@@ -24,4 +24,16 @@ export class UserAService {
   async getAll() {
     return await this.prisma.user.findMany();
   }
+
+  async changePassword(email: string, password: string) {
+    // return await prisma
+    const user = await this.prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        password,
+      },
+    });
+  }
 }

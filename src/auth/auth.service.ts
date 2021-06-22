@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { UserAService } from 'src/user_a/user_a.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '.prisma/client';
+
+type UserType = Omit<User, 'id' | 'password'>;
 
 @Injectable()
 export class AuthService {
@@ -32,9 +35,27 @@ export class AuthService {
   }
 
   // social login
-  async socialLogin(email: string, name: string, socialID: string) {
+
+  async socialLogin(email: string, social_token: string, details: UserType) {
+    console.log('service: social login to return jwt');
+
     // TODO :find or create account here
-    const payload = { email, sub: { name, socialID } };
+    // Search first
+    let user = await this.userAService.getUser({ email });
+    if (!user) {
+      const { name, facebookId, googleId, profileURL } = details;
+      user = await this.userAService.create({
+        name,
+        email,
+        profileURL,
+        facebookId,
+        googleId,
+        password: facebookId || googleId,
+      });
+      console.log('successful create user ', user);
+    }
+
+    const payload = { email, sub: { social_token, user } };
     return {
       access_token: this.jwtService.sign(payload),
     };

@@ -62,9 +62,6 @@ export class App2Controller {
   async facebookLoginRedirect(@Req() req: Request): Promise<any> {
     console.log('authented with facebook !');
 
-    return {
-      statusCode: HttpStatus.OK,
-      data: req.user,
-    };
+    return req.user;
   }
 }

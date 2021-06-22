@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-facebook';
 import { AuthService } from '../auth.service';
+import { User } from '.prisma/client';
+
+type UserType = Omit<User, 'id' | 'password'>;
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy) {
@@ -31,22 +34,19 @@ export class FacebookStrategy extends PassportStrategy(Strategy) {
   ) {
     console.log('running social strategy');
     const { id, name, emails, photos } = profile;
-    const user = {
+    const user: UserType = {
       email: emails[0].value,
-      fbId: id,
+      facebookId: id,
+      googleId: null,
       name: `${name.givenName} ${name.familyName}`,
-      another: 'asds',
-      photos,
+      profileURL: photos[0].value,
     };
-    const payload = this.authService.socialLogin(
+    console.log(photos);
+    const jwtToken = await this.authService.socialLogin(
       user.email,
-      user.name,
-      user.fbId,
+      accessToken,
+      user,
     );
-    // const payload = {
-    //   user,
-    //   accessToken,
-    // };
-    done(null, payload); //payload will be returned as req.user
+    done(null, jwtToken); //payload will be returned as req.user
   }
 }

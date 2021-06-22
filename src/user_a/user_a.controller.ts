@@ -79,4 +79,10 @@ export class UserAController {
       message: 'logout success',
     };
   }
+
+  @Get('bypass')
+  async getUserBypass() {
+    const user = await this.userAService.getAll();
+    return user;
+  }
 }
